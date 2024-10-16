@@ -8,18 +8,27 @@ import { Loader } from './Loader';
 
 type Props = {
   todo: Todo;
+  activeTodo: Todo | null;
+  setActiveTodo: (todo: Todo) => void;
   onDelete: (todoId: number) => void;
   loadingState: boolean;
 };
 
 export const ToDo: React.FC<Props> = ({
   todo,
+  activeTodo,
+  setActiveTodo,
   onDelete = () => {},
   loadingState,
 }) => {
   const [onEdit] = useState(false);
 
-  const completedTodo = todo.completed === true;
+  const completedTodo = todo.completed;
+
+  const handleDelete = (todoToDelete: Todo) => {
+    setActiveTodo(todoToDelete);
+    onDelete(todoToDelete.id);
+  };
 
   return (
     <div
@@ -44,7 +53,7 @@ export const ToDo: React.FC<Props> = ({
           <button
             type="button"
             className="todo__remove"
-            onClick={() => onDelete(todo.id)}
+            onClick={() => handleDelete(todo)}
             data-cy="TodoDelete"
           >
             ×
@@ -63,7 +72,7 @@ export const ToDo: React.FC<Props> = ({
       )}
 
       {/* overlay will cover the todo while it is being deleted or updated */}
-      <Loader loadingState={loadingState} todo={todo} />
+      <Loader loadingState={loadingState} todo={todo} activeTodo={activeTodo} />
     </div>
   );
 };

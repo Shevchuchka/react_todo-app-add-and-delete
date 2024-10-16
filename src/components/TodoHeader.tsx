@@ -5,26 +5,29 @@ import { USER_ID } from '../api/todos';
 
 type Props = {
   todos: Todo[];
-  addTodo: ({ userId, title, completed }: Omit<Todo, 'id'>) => Promise<void>;
+  addTodo: (
+    tempTodoTitle: string,
+    { userId, title, completed }: Omit<Todo, 'id'>,
+  ) => Promise<void>;
   loadingState: boolean;
-  loadingFunction: (value: boolean) => void;
   errorFunction?: (message: string) => void;
-  setTodoList: (TempTodos: Todo[]) => void;
 };
 
 export const TodoHeader: React.FC<Props> = ({
   todos,
   loadingState,
   addTodo = () => {},
-  setTodoList = () => {},
-  loadingFunction = () => {},
   errorFunction = () => {},
 }) => {
   const [query, setQuery] = useState('');
 
-  const normalizedQuery = query.trim();
-
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (inputRef.current && !loadingState) {
+      inputRef.current.focus();
+    }
+  }, [loadingState]);
 
   const checkActiveTodos = (): boolean => {
     return todos.every(todo => todo.completed === true);
@@ -40,38 +43,23 @@ export const TodoHeader: React.FC<Props> = ({
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    errorFunction('');
+    const normalizedQuery = query.trim();
 
-    loadingFunction(true);
+    if (normalizedQuery) {
+      const result = addTodo(normalizedQuery, {
+        userId: USER_ID,
+        title: normalizedQuery,
+        completed: false,
+      });
 
-    if (!normalizedQuery) {
+      if (result instanceof Promise) {
+        result.then(() => setQuery(''));
+      }
+    } else {
       errorFunction('Title should not be empty');
     }
-
-    const tempTodo: Todo = {
-      id: 0,
-      userId: 0,
-      title: normalizedQuery,
-      completed: false,
-    };
-
-    setTodoList([...todos, tempTodo]);
-
-    const result = addTodo({
-      userId: USER_ID,
-      title: normalizedQuery,
-      completed: false,
-    });
-
-    if (result instanceof Promise) {
-      result.then(() => setQuery('')).finally(() => loadingFunction(false));
-    }
   };
-
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, []);
 
   return (
     <header className="todoapp__header">
@@ -88,6 +76,7 @@ export const TodoHeader: React.FC<Props> = ({
       <form onSubmit={event => handleSubmit(event)}>
         <input
           data-cy="NewTodoField"
+          id="createTodoInput"
           ref={inputRef}
           value={query}
           onChange={event => onInputChange(event)}

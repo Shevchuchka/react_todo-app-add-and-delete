@@ -4,22 +4,19 @@ import { Todo } from '../types/Todo';
 type Props = {
   loadingState: boolean;
   todo: Todo;
+  activeTodo: Todo | null;
 };
 
-export const Loader: React.FC<Props> = ({ loadingState, todo }) => {
+export const Loader: React.FC<Props> = ({ loadingState, todo, activeTodo }) => {
   return (
     <div
       data-cy="TodoLoader"
       className={classNames('modal overlay', {
-        'is-active': loadingState,
+        'is-active': loadingState && todo.id === activeTodo?.id,
       })}
     >
-      {todo.id === 0 && (
-        <>
-          <div className="modal-background has-background-white-ter" />
-          <div className="loader" />
-        </>
-      )}
+      <div className="modal-background has-background-white-ter" />
+      <div className="loader" />
     </div>
   );
 };

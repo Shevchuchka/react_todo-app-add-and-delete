@@ -31,8 +31,6 @@ export const App: React.FC = () => {
 
   return (
     <div className="todoapp">
-      <h1 className="todoapp__title">todos</h1>
-
       <TodoContent
         todos={todos}
         setTodos={setTodos}

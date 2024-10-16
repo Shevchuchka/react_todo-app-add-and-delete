@@ -1,20 +1,32 @@
 import { Todo } from '../types/Todo';
-import { getActiveTodos, getCompletedTodos, getTodos } from '../api/todos';
+import {
+  deleteTodo,
+  getActiveTodos,
+  getCompletedTodos,
+  getTodos,
+} from '../api/todos';
 import { useCallback, useState } from 'react';
 import classNames from 'classnames';
 import { Filter } from '../types/Filter';
 
 type Props = {
   todos: Todo[];
+  setLoading: (value: boolean) => void;
+  setActiveTodo: (todo: Todo) => void;
+  setTodos: (todos: Todo[]) => void;
   filterTodos: (filteredTodos: Todo[]) => void;
   onDelete: (todoId: number) => void;
+  errorFunction: (message: string) => void;
   loadingState: boolean;
 };
 
 export const TodoFooter: React.FC<Props> = ({
   todos,
-  filterTodos = () => {},
-  onDelete = () => {},
+  setActiveTodo,
+  setLoading,
+  setTodos,
+  filterTodos,
+  errorFunction = () => {},
   loadingState,
 }) => {
   const [filterType, setFilterType] = useState<Filter>(Filter.All);
@@ -28,10 +40,30 @@ export const TodoFooter: React.FC<Props> = ({
     [todos],
   );
 
-  const clearFunction = () => {
-    filteredTodosList(Filter.Completed)
-      .map(activeTodo => activeTodo.id)
-      .forEach(id => onDelete(id));
+  const clearFunction = async (completed: Todo[]) => {
+    for (const completedTodo of completed) {
+      setActiveTodo(completedTodo);
+
+      try {
+        await deleteTodo(completedTodo.id);
+      } catch (error) {
+        errorFunction('Unable to delete a todo');
+        throw error;
+      }
+    }
+  };
+
+  const handleClear = () => {
+    const completedTodos = filteredTodosList(Filter.Completed);
+    const completedIds = completedTodos.map(actives => actives.id);
+
+    setLoading(true);
+
+    return clearFunction(completedTodos)
+      .then(() =>
+        setTodos(todos.filter(todo => !completedIds.includes(todo.id))),
+      )
+      .finally(() => setLoading(false));
   };
 
   const filterFunction = (filter: Filter) => {
@@ -87,7 +119,7 @@ export const TodoFooter: React.FC<Props> = ({
         type="button"
         className="todoapp__clear-completed"
         data-cy="ClearCompletedButton"
-        onClick={() => clearFunction()}
+        onClick={() => handleClear()}
         disabled={
           filteredTodosList(Filter.Completed).length === 0 || loadingState
         }
