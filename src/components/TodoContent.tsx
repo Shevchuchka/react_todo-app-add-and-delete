@@ -62,14 +62,6 @@ export const TodoContent: React.FC<Props> = ({
         throw error;
       })
       .finally(() => setLoading(false));
-    // return createTodo({ userId, title, completed })
-    //   .then(newTodo => setTodos([newTodo, ...todos]))
-    //   .catch(error => {
-    //     errorFunction('Unable to add a todo');
-    //     setTodoList(todos.filter(todo => todo.id !== tempTodo.id));
-    //     throw error;
-    //   })
-    //   .finally(() => setLoading(false));
   };
 
   return (

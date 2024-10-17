@@ -41,27 +41,30 @@ export const TodoFooter: React.FC<Props> = ({
   );
 
   const clearFunction = async (completed: Todo[]) => {
+    const successesDeletes: number[] = [];
+
     for (const completedTodo of completed) {
       setActiveTodo(completedTodo);
 
       try {
         await deleteTodo(completedTodo.id);
+        successesDeletes.push(completedTodo.id);
       } catch (error) {
         errorFunction('Unable to delete a todo');
-        throw error;
       }
     }
+
+    return successesDeletes;
   };
 
   const handleClear = () => {
     const completedTodos = filteredTodosList(Filter.Completed);
-    const completedIds = completedTodos.map(actives => actives.id);
 
     setLoading(true);
 
     return clearFunction(completedTodos)
-      .then(() =>
-        setTodos(todos.filter(todo => !completedIds.includes(todo.id))),
+      .then(successesDeletes =>
+        setTodos(todos.filter(todo => !successesDeletes.includes(todo.id))),
       )
       .finally(() => setLoading(false));
   };

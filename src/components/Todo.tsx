@@ -71,7 +71,6 @@ export const ToDo: React.FC<Props> = ({
         </form>
       )}
 
-      {/* overlay will cover the todo while it is being deleted or updated */}
       <Loader loadingState={loadingState} todo={todo} activeTodo={activeTodo} />
     </div>
   );
