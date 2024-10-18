@@ -1,30 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { TodoFooter } from './TodoFooter';
 import { TodoHeader } from './TodoHeader';
 import { TodoList } from './TodoList';
 
 import { Todo } from '../types/Todo';
-import { createTodo, deleteTodo } from '../api/todos';
+import { createTodo, deleteTodo, getTodos } from '../api/todos';
 
 type Props = {
-  todos: Todo[];
-  setTodos: (todo: Todo[]) => void;
   errorFunction?: (message: string) => void;
 };
 
-export const TodoContent: React.FC<Props> = ({
-  todos,
-  setTodos,
-  errorFunction = () => {},
-}) => {
+export const TodoContent: React.FC<Props> = ({ errorFunction = () => {} }) => {
+  const [todos, setTodos] = useState<Todo[]>([]);
   const [todoList, setTodoList] = useState<Todo[]>(todos);
   const [activeTodo, setActiveTodo] = useState<Todo | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setTodoList(todos);
-  }, [todos]);
+    getTodos()
+      .then(setTodos)
+      .catch(() => errorFunction('Unable to load todos'));
+  }, []);
+
+  useMemo(() => setTodoList(todos), [todos]);
 
   const deleteFunction = (todoId: number) => {
     setLoading(true);
