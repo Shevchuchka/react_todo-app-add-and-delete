@@ -30,9 +30,8 @@ export const TodoContent: React.FC<Props> = ({ errorFunction = () => {} }) => {
 
     deleteTodo(todoId)
       .then(() => setTodos(todos.filter(todo => todo.id !== todoId)))
-      .catch(error => {
+      .catch(() => {
         errorFunction('Unable to delete a todo');
-        throw error;
       })
       .finally(() => setLoading(false));
   };
@@ -56,8 +55,6 @@ export const TodoContent: React.FC<Props> = ({ errorFunction = () => {} }) => {
     return createTodo({ userId, title, completed })
       .then(newTodo => setTodos([...todos, newTodo]))
       .catch(error => {
-        errorFunction('Unable to add a todo');
-        setTodos(todos.filter(todo => todo.id !== tempTodo.id));
         throw error;
       })
       .finally(() => setLoading(false));
@@ -70,6 +67,7 @@ export const TodoContent: React.FC<Props> = ({ errorFunction = () => {} }) => {
       <div className="todoapp__content">
         <TodoHeader
           todos={todos}
+          setTodoList={setTodoList}
           addTodo={addFunction}
           loadingState={loading}
           errorFunction={errorFunction}

@@ -5,6 +5,7 @@ import { USER_ID } from '../api/todos';
 
 type Props = {
   todos: Todo[];
+  setTodoList: (todos: Todo[]) => void;
   addTodo: (
     tempTodoTitle: string,
     { userId, title, completed }: Omit<Todo, 'id'>,
@@ -16,7 +17,8 @@ type Props = {
 export const TodoHeader: React.FC<Props> = ({
   todos,
   loadingState,
-  addTodo = () => {},
+  setTodoList,
+  addTodo,
   errorFunction = () => {},
 }) => {
   const [query, setQuery] = useState('');
@@ -54,7 +56,12 @@ export const TodoHeader: React.FC<Props> = ({
       });
 
       if (result instanceof Promise) {
-        result.then(() => setQuery(''));
+        result
+          .then(() => setQuery(''))
+          .catch(() => {
+            errorFunction('Unable to add a todo');
+            setTodoList(todos.filter(todo => todo.id !== 0));
+          });
       }
     } else {
       errorFunction('Title should not be empty');
